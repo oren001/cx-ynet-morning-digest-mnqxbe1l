@@ -52,6 +52,12 @@
             font-size: 14px;
         }
 
+        .header .current-date {
+            color: #888;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
         .header .actions {
             display: flex;
             gap: 10px;
@@ -179,7 +185,8 @@
             overflow-y: auto;
         }
 
-        .reading-item {
+        .reading-item,
+        .article-item {
             padding: 12px;
             background: #f8f9fa;
             border-radius: 8px;
@@ -188,7 +195,8 @@
             transition: all 0.3s ease;
         }
 
-        .reading-item:hover {
+        .reading-item:hover,
+        .article-item:hover {
             background: #e9ecef;
             transform: translateX(-5px);
         }
@@ -252,13 +260,15 @@
             cursor: pointer;
         }
 
-        .loading {
+        .loading,
+        .loading-spinner {
             text-align: center;
             padding: 40px;
             color: #666;
         }
 
-        .loading::after {
+        .loading::after,
+        .loading-spinner::after {
             content: '...';
             animation: dots 1.5s steps(3, end) infinite;
         }
@@ -319,7 +329,10 @@
         <div class="header">
             <h1>📊 לוח הבקרה שלי</h1>
             <div class="user-info">
-                <span class="user-email" id="userEmail">טוען...</span>
+                <div>
+                    <span class="user-email" id="userEmail">טוען...</span>
+                    <div class="current-date" id="currentDate"></div>
+                </div>
                 <div class="actions">
                     <a href="/" class="btn btn-secondary">חזרה לעמוד הראשי</a>
                     <button class="btn btn-primary" id="refreshBtn">רענן נתונים</button>
@@ -329,7 +342,7 @@
 
         <div id="messageContainer"></div>
 
-        <div id="dashboardContent" class="loading">טוען נתונים</div>
+        <div id="dashboardContent" class="loading-spinner">טוען נתונים</div>
     </div>
 
     <script>
@@ -366,12 +379,27 @@
             }
         }
 
+        function updateCurrentDate() {
+            const dateElement = document.getElementById('currentDate');
+            if (dateElement) {
+                const now = new Date();
+                const formattedDate = now.toLocaleDateString('en-GB');
+                dateElement.textContent = formattedDate;
+            }
+        }
+
         function renderDashboard(data) {
             const content = document.getElementById('dashboardContent');
             
             const stats = data.analytics || {};
             const preferences = data.preferences || {};
             const history = data.history || [];
+            const articles = data.articles || [];
+
+            const totalReads = parseInt(stats.totalArticlesRead) || 0;
+            const readingStreak = parseInt(stats.readingStreak) || 0;
+            const totalDigests = parseInt(stats.totalDigests) || 0;
+            const avgArticles = parseFloat(stats.avgArticlesPerDay) || 0;
 
             content.innerHTML = `
                 <div class="dashboard-grid">
@@ -379,19 +407,19 @@
                         <h2>📈 סטטיסטיקות כלליות</h2>
                         <div class="stat-box">
                             <span class="stat-label">כתבות שנקראו</span>
-                            <span class="stat-value">${stats.totalArticlesRead || 0}</span>
+                            <span class="stat-value">${totalReads}</span>
                         </div>
                         <div class="stat-box">
                             <span class="stat-label">ימי קריאה רצופים</span>
-                            <span class="stat-value">${stats.readingStreak || 0}</span>
+                            <span class="stat-value">${readingStreak}</span>
                         </div>
                         <div class="stat-box">
                             <span class="stat-label">תקצירים שנוצרו</span>
-                            <span class="stat-value">${stats.totalDigests || 0}</span>
+                            <span class="stat-value">${totalDigests}</span>
                         </div>
                         <div class="stat-box">
                             <span class="stat-label">ממוצע כתבות ליום</span>
-                            <span class="stat-value">${stats.avgArticlesPerDay || 0}</span>
+                            <span class="stat-value">${avgArticles.toFixed(1)}</span>
                         </div>
                     </div>
 
@@ -437,10 +465,20 @@
                     <h2>📚 היסטוריית קריאה אחרונה</h2>
                     <div class="reading-list" id="readingHistory"></div>
                 </div>
+
+                ${articles.length > 0 ? `
+                <div class="card">
+                    <h2>📰 מאמרים אחרונים</h2>
+                    <div class="reading-list" id="articlesList"></div>
+                </div>
+                ` : ''}
             `;
 
             renderCategoryPreferences(preferences.categoryWeights || {});
             renderReadingHistory(history);
+            if (articles.length > 0) {
+                renderArticlesList(articles);
+            }
             attachEventListeners();
         }
 
@@ -475,15 +513,56 @@
                 return;
             }
 
-            container.innerHTML = history.map(item => `
-                <div class="reading-item" onclick="window.open('${item.url}', '_blank')">
-                    <div class="reading-item-title">${item.title}</div>
+            container.innerHTML = history.slice(0, 10).map(item => `
+                <div class="reading-item" onclick="window.open('${item.url || item.articleUrl || '#'}', '_blank')">
+                    <div class="reading-item-title">${item.title || 'כתבה'}</div>
                     <div class="reading-item-meta">
                         <span>${item.category || 'כללי'}</span>
-                        <span>${formatDate(item.timestamp)}</span>
+                        <span>${formatDate(item.timestamp || item.date)}</span>
                     </div>
                 </div>
             `).join('');
+        }
+
+        function renderArticlesList(articles) {
+            const container = document.getElementById('articlesList');
+            if (!articles || articles.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📰</div><p>אין מאמרים זמינים</p></div>';
+                return;
+            }
+
+            container.innerHTML = articles.slice(0, 10).map(article => `
+                <div class="article-item" data-article-id="${article.id || article.url}" onclick="handleArticleClick(this, '${article.url}', '${(article.title || '').replace(/'/g, "\\'")}', '${article.category || ''}')">
+                    <div class="reading-item-title">${article.title || 'כתבה'}</div>
+                    <div class="reading-item-meta">
+                        <span>${article.category || 'כללי'}</span>
+                        <span>${article.source || 'ynet'}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function handleArticleClick(element, url, title, category) {
+            if (userId && url) {
+                try {
+                    await fetch('/api/track-reading', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            userId,
+                            articleUrl: url,
+                            title: title,
+                            category: category,
+                            timestamp: new Date().toISOString()
+                        })
+                    });
+                } catch (error) {
+                    console.error('Error tracking reading:', error);
+                }
+            }
+            window.open(url, '_blank');
         }
 
         function attachEventListeners() {
@@ -497,7 +576,12 @@
 
             const refreshBtn = document.getElementById('refreshBtn');
             if (refreshBtn) {
-                refreshBtn.addEventListener('click', loadDashboard);
+                refreshBtn.addEventListener('click', async () => {
+                    const content = document.getElementById('dashboardContent');
+                    content.className = 'loading';
+                    content.textContent = 'טוען נתונים';
+                    await loadDashboard();
+                });
             }
         }
 
@@ -538,10 +622,10 @@
         async function loadDashboard() {
             try {
                 const content = document.getElementById('dashboardContent');
-                content.className = 'loading';
+                content.className = 'loading-spinner';
                 content.textContent = 'טוען נתונים';
 
-                const response = await fetch(`/api/analytics?userId=${userId}`);
+                const response = await fetch(`/api/dashboard?userId=${userId}`);
                 
                 if (!response.ok) {
                     throw new Error('Failed to load dashboard data');
@@ -572,6 +656,7 @@
                 document.getElementById('userEmail').textContent = userEmail;
             }
 
+            updateCurrentDate();
             loadDashboard();
         });
     </script>

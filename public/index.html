@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
@@ -195,6 +194,28 @@
             opacity: 0.8;
         }
 
+        .article-item {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .article-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .article-item.read {
+            background: #f8f9fa;
+            border-color: #d0d0d0;
+            opacity: 0.8;
+        }
+
         .article-category {
             display: inline-block;
             padding: 4px 12px;
@@ -297,6 +318,12 @@
             color: #999;
         }
 
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
         .spinner {
             border: 3px solid #f3f3f3;
             border-top: 3px solid #667eea;
@@ -324,6 +351,11 @@
             color: white;
             text-decoration: underline;
             margin: 0 10px;
+        }
+
+        .refresh-button {
+            width: 100%;
+            margin-bottom: 20px;
         }
 
         @media (max-width: 600px) {
@@ -401,9 +433,10 @@
 
             <div class="card">
                 <h2 style="margin-bottom: 20px; color: #333;">התקציר היומי שלך</h2>
+                <button id="refreshBtn" class="btn btn-secondary refresh-button">רענן תקציר</button>
                 <div class="digest-date" id="digestDate"></div>
                 
-                <div id="loadingDigest" class="loading hidden">
+                <div id="loadingDigest" class="loading-spinner hidden">
                     <div class="spinner"></div>
                     <p>טוען תקציר...</p>
                 </div>
@@ -521,7 +554,8 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    document.getElementById('statArticlesRead').textContent = data.articlesRead || 0;
+                    const articlesRead = parseInt(data.articlesRead) || 0;
+                    document.getElementById('statArticlesRead').textContent = articlesRead;
                     document.getElementById('statDigestsReceived').textContent = data.digestsReceived || 0;
                     
                     const topCategory = data.topCategory || 'לא ידוע';
@@ -529,6 +563,7 @@
                 }
             } catch (error) {
                 console.error('Error loading stats:', error);
+                document.getElementById('statArticlesRead').textContent = '0';
             }
         }
 
@@ -547,8 +582,10 @@
 
                 if (response.ok && data.articles && data.articles.length > 0) {
                     const date = new Date(data.generatedAt);
-                    document.getElementById('digestDate').textContent = 
-                        `תקציר מיום ${date.toLocaleDateString('he-IL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = date.getFullYear();
+                    document.getElementById('digestDate').textContent = `תקציר מיום ${day}.${month}.${year}`;
 
                     data.articles.forEach(article => {
                         const articleEl = createArticleCard(article, data.readArticles || []);
@@ -579,7 +616,7 @@
             const isRead = readArticles.includes(article.url);
             
             const card = document.createElement('div');
-            card.className = `article-card ${isRead ? 'read' : ''}`;
+            card.className = `article-item ${isRead ? 'read' : ''}`;
             card.dataset.url = article.url;
             card.dataset.articleId = article.id;
 
@@ -646,8 +683,15 @@
             }
         }
 
+        function handleRefresh() {
+            const loadingEl = document.getElementById('loadingDigest');
+            loadingEl.classList.remove('hidden');
+            loadTodayDigest();
+        }
+
         document.getElementById('loginBtn').addEventListener('click', handleLogin);
         document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+        document.getElementById('refreshBtn').addEventListener('click', handleRefresh);
         
         document.getElementById('email').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') handleLogin();
@@ -674,4 +718,3 @@
     </script>
 </body>
 </html>
-```
