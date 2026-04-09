@@ -1,0 +1,39 @@
+```json
+{
+  "name": "personal-morning-digest",
+  "version": "1.0.0",
+  "description": "Personal morning digest that scrapes Ynet news and delivers personalized summaries",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "format": "prettier --write \"**/*.{js,json,md}\"",
+    "lint": "eslint src/**/*.js"
+  },
+  "keywords": [
+    "cloudflare-workers",
+    "news-digest",
+    "personalization",
+    "machine-learning",
+    "ynet",
+    "hebrew"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20231218.0",
+    "eslint": "^8.56.0",
+    "prettier": "^3.1.1",
+    "vitest": "^1.1.0",
+    "wrangler": "^3.22.1"
+  },
+  "dependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+```

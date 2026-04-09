@@ -1,0 +1,677 @@
+```html
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>עיתון אישי - התקציר הבוקר שלך</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding-top: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .user-info h3 {
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .user-info .email {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .digest-container {
+            margin-top: 20px;
+        }
+
+        .digest-date {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+
+        .article-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .article-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .article-card.read {
+            background: #f8f9fa;
+            border-color: #d0d0d0;
+            opacity: 0.8;
+        }
+
+        .article-category {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .article-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .article-author {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .article-preview {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .article-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85em;
+            color: #999;
+        }
+
+        .article-score {
+            background: #ffeaa7;
+            color: #d63031;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .read-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #27ae60;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .no-digest {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .no-digest-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            margin-top: 40px;
+            opacity: 0.8;
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: underline;
+            margin: 0 10px;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .header p {
+                font-size: 1em;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .article-title {
+                font-size: 1.1em;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📰 עיתון אישי</h1>
+            <p>התקציר הבוקר המותאם אישית לך</p>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div id="authSection" class="card">
+            <h2 style="margin-bottom: 20px; color: #333;">התחבר או הירשם</h2>
+            <div class="form-group">
+                <label for="email">כתובת אימייל</label>
+                <input type="email" id="email" placeholder="your@email.com" required>
+            </div>
+            <div class="form-group">
+                <label for="name">שם מלא</label>
+                <input type="text" id="name" placeholder="השם שלך">
+            </div>
+            <button id="loginBtn" class="btn">התחל</button>
+        </div>
+
+        <div id="mainSection" class="hidden">
+            <div class="card">
+                <div class="user-info">
+                    <div>
+                        <h3 id="userName">שלום!</h3>
+                        <div class="email" id="userEmail"></div>
+                    </div>
+                    <button id="logoutBtn" class="btn btn-secondary" style="width: auto; padding: 10px 20px;">התנתק</button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-number" id="statArticlesRead">0</div>
+                        <div class="stat-label">מאמרים שנקראו</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="statDigestsReceived">0</div>
+                        <div class="stat-label">תקצירים התקבלו</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="statTopCategory">-</div>
+                        <div class="stat-label">קטגוריה מועדפת</div>
+                    </div>
+                </div>
+
+                <button id="viewDashboardBtn" class="btn btn-secondary" style="margin-bottom: 20px;">צפה בלוח הבקרה המלא</button>
+            </div>
+
+            <div class="card">
+                <h2 style="margin-bottom: 20px; color: #333;">התקציר היומי שלך</h2>
+                <div class="digest-date" id="digestDate"></div>
+                
+                <div id="loadingDigest" class="loading hidden">
+                    <div class="spinner"></div>
+                    <p>טוען תקציר...</p>
+                </div>
+
+                <div id="digestContainer" class="digest-container"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>עיתון אישי - התקציר הבוקר המותאם אישית</p>
+            <div>
+                <a href="dashboard.html">לוח בקרה</a>
+                <a href="#" id="privacyLink">פרטיות</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+        let currentUser = null;
+
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            alertContainer.appendChild(alertDiv);
+
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        function saveUser(user) {
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            currentUser = user;
+        }
+
+        function loadUser() {
+            const stored = localStorage.getItem('currentUser');
+            if (stored) {
+                currentUser = JSON.parse(stored);
+                return true;
+            }
+            return false;
+        }
+
+        function clearUser() {
+            localStorage.removeItem('currentUser');
+            currentUser = null;
+        }
+
+        function showAuthSection() {
+            document.getElementById('authSection').classList.remove('hidden');
+            document.getElementById('mainSection').classList.add('hidden');
+        }
+
+        function showMainSection() {
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('mainSection').classList.remove('hidden');
+            
+            document.getElementById('userName').textContent = `שלום, ${currentUser.name}!`;
+            document.getElementById('userEmail').textContent = currentUser.email;
+
+            loadUserStats();
+            loadTodayDigest();
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('email').value.trim();
+            const name = document.getElementById('name').value.trim();
+
+            if (!email) {
+                showAlert('נא להזין כתובת אימייל', 'error');
+                return;
+            }
+
+            if (!name) {
+                showAlert('נא להזין שם', 'error');
+                return;
+            }
+
+            document.getElementById('loginBtn').disabled = true;
+            document.getElementById('loginBtn').textContent = 'מתחבר...';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, name })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    saveUser({ userId: data.userId, email, name });
+                    showAlert('התחברת בהצלחה!', 'success');
+                    showMainSection();
+                } else {
+                    showAlert(data.error || 'שגיאה בהתחברות', 'error');
+                }
+            } catch (error) {
+                showAlert('שגיאת רשת. נסה שוב.', 'error');
+            } finally {
+                document.getElementById('loginBtn').disabled = false;
+                document.getElementById('loginBtn').textContent = 'התחל';
+            }
+        }
+
+        async function loadUserStats() {
+            try {
+                const response = await fetch(`${API_BASE}/api/analytics/${currentUser.userId}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('statArticlesRead').textContent = data.articlesRead || 0;
+                    document.getElementById('statDigestsReceived').textContent = data.digestsReceived || 0;
+                    
+                    const topCategory = data.topCategory || 'לא ידוע';
+                    document.getElementById('statTopCategory').textContent = topCategory;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadTodayDigest() {
+            const loadingEl = document.getElementById('loadingDigest');
+            const containerEl = document.getElementById('digestContainer');
+            
+            loadingEl.classList.remove('hidden');
+            containerEl.innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/digest/${currentUser.userId}`);
+                const data = await response.json();
+
+                loadingEl.classList.add('hidden');
+
+                if (response.ok && data.articles && data.articles.length > 0) {
+                    const date = new Date(data.generatedAt);
+                    document.getElementById('digestDate').textContent = 
+                        `תקציר מיום ${date.toLocaleDateString('he-IL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+
+                    data.articles.forEach(article => {
+                        const articleEl = createArticleCard(article, data.readArticles || []);
+                        containerEl.appendChild(articleEl);
+                    });
+                } else {
+                    containerEl.innerHTML = `
+                        <div class="no-digest">
+                            <div class="no-digest-icon">📭</div>
+                            <h3>אין תקציר זמין כרגע</h3>
+                            <p>התקציר הבא שלך ייווצר מחר בבוקר</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                loadingEl.classList.add('hidden');
+                containerEl.innerHTML = `
+                    <div class="no-digest">
+                        <div class="no-digest-icon">⚠️</div>
+                        <h3>שגיאה בטעינת התקציר</h3>
+                        <p>נסה לרענן את הדף</p>
+                    </div>
+                `;
+            }
+        }
+
+        function createArticleCard(article, readArticles) {
+            const isRead = readArticles.includes(article.url);
+            
+            const card = document.createElement('div');
+            card.className = `article-card ${isRead ? 'read' : ''}`;
+            card.dataset.url = article.url;
+            card.dataset.articleId = article.id;
+
+            card.innerHTML = `
+                ${isRead ? '<div class="read-badge">נקרא</div>' : ''}
+                <div class="article-category">${article.category || 'כללי'}</div>
+                <h3 class="article-title">${article.title}</h3>
+                ${article.author ? `<div class="article-author">מאת: ${article.author}</div>` : ''}
+                <p class="article-preview">${article.preview || article.description || ''}</p>
+                <div class="article-meta">
+                    <span>${new Date(article.publishedAt).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}</span>
+                    <span class="article-score">ציון: ${Math.round(article.score || 0)}</span>
+                </div>
+            `;
+
+            card.addEventListener('click', () => handleArticleClick(article));
+
+            return card;
+        }
+
+        async function handleArticleClick(article) {
+            try {
+                await fetch(`${API_BASE}/api/track`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: currentUser.userId,
+                        articleId: article.id,
+                        url: article.url,
+                        category: article.category,
+                        author: article.author,
+                        keywords: article.keywords || []
+                    })
+                });
+
+                window.open(article.url, '_blank');
+                
+                setTimeout(() => {
+                    const card = document.querySelector(`[data-url="${article.url}"]`);
+                    if (card) {
+                        card.classList.add('read');
+                        if (!card.querySelector('.read-badge')) {
+                            const badge = document.createElement('div');
+                            badge.className = 'read-badge';
+                            badge.textContent = 'נקרא';
+                            card.appendChild(badge);
+                        }
+                    }
+                }, 500);
+
+                loadUserStats();
+            } catch (error) {
+                console.error('Error tracking article:', error);
+            }
+        }
+
+        function handleLogout() {
+            if (confirm('האם אתה בטוח שברצונך להתנתק?')) {
+                clearUser();
+                showAuthSection();
+                showAlert('התנתקת בהצלחה', 'info');
+            }
+        }
+
+        document.getElementById('loginBtn').addEventListener('click', handleLogin);
+        document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+        
+        document.getElementById('email').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleLogin();
+        });
+        
+        document.getElementById('name').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleLogin();
+        });
+
+        document.getElementById('viewDashboardBtn').addEventListener('click', () => {
+            window.location.href = 'dashboard.html';
+        });
+
+        document.getElementById('privacyLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('כל הנתונים שלך מאוחסנים באופן מקומי ופרטי. אנחנו לא משתפים מידע עם צדדים שלישיים.');
+        });
+
+        if (loadUser()) {
+            showMainSection();
+        } else {
+            showAuthSection();
+        }
+    </script>
+</body>
+</html>
+```

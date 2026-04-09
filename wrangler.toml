@@ -1,0 +1,66 @@
+```toml
+name = "ynet-personal-digest"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+workers_dev = true
+
+[env.production]
+name = "ynet-personal-digest-prod"
+routes = [
+  { pattern = "digest.example.com/*", zone_name = "example.com" }
+]
+
+[triggers]
+crons = ["0 6 * * *", "0 */4 * * *"]
+
+[[kv_namespaces]]
+binding = "USERS_KV"
+id = "your_users_kv_namespace_id"
+preview_id = "your_users_kv_preview_namespace_id"
+
+[[kv_namespaces]]
+binding = "ARTICLES_KV"
+id = "your_articles_kv_namespace_id"
+preview_id = "your_articles_kv_preview_namespace_id"
+
+[[kv_namespaces]]
+binding = "DIGESTS_KV"
+id = "your_digests_kv_namespace_id"
+preview_id = "your_digests_kv_preview_namespace_id"
+
+[[kv_namespaces]]
+binding = "PREFERENCES_KV"
+id = "your_preferences_kv_namespace_id"
+preview_id = "your_preferences_kv_preview_namespace_id"
+
+[[kv_namespaces]]
+binding = "ANALYTICS_KV"
+id = "your_analytics_kv_namespace_id"
+preview_id = "your_analytics_kv_preview_namespace_id"
+
+[vars]
+ENVIRONMENT = "production"
+SCRAPE_RATE_LIMIT_PER_HOUR = "30"
+MAX_ARTICLES_PER_SCRAPE = "50"
+DIGEST_ARTICLE_COUNT = "10"
+USER_AGENT = "YnetPersonalDigest/1.0 (Educational Project)"
+
+[[routes]]
+pattern = "*/api/*"
+zone_name = ""
+
+[[routes]]
+pattern = "*/"
+zone_name = ""
+
+[build]
+command = ""
+
+[observability]
+enabled = true
+
+[placement]
+mode = "smart"
+```
